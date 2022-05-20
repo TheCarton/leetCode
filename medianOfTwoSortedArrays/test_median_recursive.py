@@ -49,7 +49,17 @@ def test_two_arrays_mixed():
     a = [-1, 9, 10]
     b = [0, 1, 7]
     expected_median = statistics.median(a + b)
-    assert sol.findMedianSortedArrays(a, b) == expected_median
+    sol_median = sol.findMedianSortedArrays(a, b)
+    assert sol_median == expected_median
+
+
+def test_two_arrays_size_four():
+    sol = median_recur.Solution()
+    a = [-1, 9, 10, 20]
+    b = [0, 1, 7, 100]
+    expected_median = statistics.median(a + b)
+    sol_median = sol.findMedianSortedArrays(a, b)
+    assert sol_median == expected_median
 
 
 def test_two_arrays_one_bigger_different_intervals():

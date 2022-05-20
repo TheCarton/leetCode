@@ -65,25 +65,14 @@ class Solution(object):
         if at_least_one_is_empty or (len(nums1) == 1 and len(nums2) == 1):
             return self.find_median(nums1 + nums2)
 
-        nums1_max_less_than_nums2_min = nums1[-1] <= nums2[0]
-        if nums1_max_less_than_nums2_min:
-            return self.find_median(nums1 + nums2)
-
-        nums2_max_less_than_nums1_min = nums2[-1] <= nums1[0]
-        if nums2_max_less_than_nums1_min:
-            return self.find_median(nums2 + nums1)
-
         # If we get here, the lists are 'mixed' and non-empty,
         # so we can't just union them.
 
         nums1_median = self.find_median(nums1)
-        if nums1_median <= nums2[0]:
-            return self.findMedianSortedArrays(nums1[len(nums1) // 2:], nums2[:len(nums2) // 2])
-        if nums1_median >= nums2[-1]:
-            return self.findMedianSortedArrays(nums1[:len(nums1) // 2], nums2[len(nums2) // 2:])
-
         nums2_median = self.find_median(nums2)
-        if nums2_median <= nums1[0]:
-            return self.findMedianSortedArrays(nums2[len(nums2) // 2:], nums1[:len(nums1) // 2])
-        if nums2_median >= nums1[-1]:
-            return self.findMedianSortedArrays(nums2[:len(nums2) // 2], nums1[len(nums1) // 2:])
+        if nums1_median == nums2_median:
+            return nums1_median
+        if nums1_median < nums2_median:
+            return self.findMedianSortedArrays(nums1[len(nums1) // 2:], nums2[:(len(nums2) // 2) + 1])
+        if nums1_median > nums2_median:
+            return self.findMedianSortedArrays(nums1[:(len(nums1) // 2) + 1], nums2[len(nums2) // 2:])
