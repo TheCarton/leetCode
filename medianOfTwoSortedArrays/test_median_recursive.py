@@ -38,6 +38,18 @@ def test_find_median_even():
     assert sol.find_median([1, 3]) == 2
 
 
+def test_reduce_larger():
+    sol = median_recur.Solution()
+    (a, b) = sol.reduce_larger([1, 2, 10, 20, 50], [1, 2])
+    assert a == [1, 2] and b == [1, 2]
+
+
+def test_reduce_larger_mixed():
+    sol = median_recur.Solution()
+    (a, b) = sol.reduce_larger([10, 20, 50, 1000], [1, 2])
+    assert a == [10, 20] and b == [1, 2]
+
+
 def test_find_median_two_arrays_small():
     sol = median_recur.Solution()
     assert sol.findMedianSortedArrays([1, 3], [2]) == 2
@@ -53,12 +65,22 @@ def test_two_arrays_mixed():
     assert sol_median == expected_median
 
 
+def test_one_singleton_one_large():
+    sol = median_recur.Solution()
+    a = [-1]
+    b = [-50, 0, 1, 7, 65, 100]
+    expected_median = statistics.median(a + b)
+    sol_median = sol.findMedianSortedArrays(a, b)
+    assert sol_median == expected_median
+
+
 def test_two_arrays_size_four():
     sol = median_recur.Solution()
     a = [-1, 9, 10, 20]
     b = [0, 1, 7, 100]
     expected_median = statistics.median(a + b)
     sol_median = sol.findMedianSortedArrays(a, b)
+
     assert sol_median == expected_median
 
 
