@@ -56,44 +56,61 @@ class Solution(object):
             return float(nums[middle_index])
 
     def remove_min(self, nums1, nums2):
+        if not nums1 and not nums2:
+            return [], []
+        if not nums1:
+            nums2.pop(0)
+            return [], nums2
+        if not nums2:
+            nums1.pop(0)
+            return nums1, []
         if nums1[0] <= nums2[0]:
-            nums1.pop()
-            return nums1, nums2
+            nums1.pop(0)
         else:
-            nums2.pop()
-            return nums1, nums2
-
-    def reduce_both(self, nums1, nums2):
-        while len(nums1) > 2 and len(nums2) > 2:
-            nums1_median = self.find_median(nums1)
-            nums2_median = self.find_median(nums2)
-            if nums1_median == nums2_median:
-                return nums1_median
-            if nums1_median < nums2_median:
-                nums1 = nums1[len(nums1) // 2:]
-                nums2 = nums2[:(len(nums2) // 2)]
-            if nums1_median > nums2_median:
-                nums1 = nums1[:(len(nums1) // 2)]
-                nums2 = nums2[len(nums2) // 2:]
+            nums2.pop(0)
         return nums1, nums2
 
-    def reduce_larger(self, nums1, nums2):
+    def remove_max(self, nums1, nums2):
+        if not nums1 and not nums2:
+            return [], []
+        if not nums1:
+            nums2.pop()
+            return [], nums2
+        if not nums2:
+            nums1.pop()
+            return nums1, []
+        if nums1[-1] >= nums2[-1]:
+            nums1.pop()
+        else:
+            nums2.pop()
+        return nums1, nums2
+
+    def balance_lists(self, nums1, nums2):
         if len(nums1) == len(nums2):
             return nums1, nums2
         if len(nums1) > len(nums2):
-            (big_list, small_list) = (nums1, nums2)
+            (big_list, small_list) = nums1, nums2
         else:
-            (big_list, small_list) = (nums2, nums1)
+            (big_list, small_list) = nums2, nums1
+        while len(big_list) != len(small_list):
+            for i, n in enumerate(small_list):
+                if big_list[i] <= small_list[i]:
+                    small_list.insert(i, big_list[i])
+                    big_list.pop(i)
+                    break
+        return small_list, big_list
 
-        small_list_median = self.find_median(small_list)
-        while len(big_list) > 3:
-            big_list_median = self.find_median(big_list)
 
-            if big_list_median <= small_list_median:
-                big_list = big_list[len(big_list) // 2:]
-            else:
-                big_list = big_list[:len(big_list) // 2]
-        return big_list, small_list
+    def make_lists_odd(self, nums1, nums2):
+        nums1_is_even = (len(nums1) % 2) == 0
+        nums2_is_even = (len(nums2) % 2) == 0
+        while nums1_is_even or nums2_is_even:
+            (nums1, nums2) = self.remove_min(nums1, nums2)
+            (nums1, nums2) = self.remove_max(nums1, nums2)
+            (nums1, nums2) = self.balance_lists(nums1, nums2)
+            nums1_is_even = (len(nums1) % 2) == 0
+            nums2_is_even = (len(nums2) % 2) == 0
+        return nums1, nums2
 
     def findMedianSortedArrays(self, nums1, nums2):
         """
@@ -108,8 +125,20 @@ class Solution(object):
         # If we get here, the lists are 'mixed' and non-empty,
         # so we can't just union them.
         total_len_is_even = (len(nums1) + len(nums2)) % 2 == 0
-        (nums1, nums2) = self.reduce_both(nums1, nums2)
-        (nums1, nums2) = self.reduce_larger(nums1, nums2)
+        nums1, nums2 = self.make_lists_odd(nums1, nums2)
+
+        while len(nums1) > 2 and len(nums2) > 2:
+            nums1_median = self.find_median(nums1)
+            median_index = len(nums1) // 2
+            nums2_median = self.find_median(nums2)
+            if nums1_median == nums2_median:
+                return nums1_median
+            if nums1_median < nums2_median:
+                nums1 = nums1[median_index:]
+                nums2 = nums2[:median_index + 1]
+            if nums1_median > nums2_median:
+                nums1 = nums1[:median_index + 1]
+                nums2 = nums2[median_index:]
         reduced_len_is_even = (len(nums1) + len(nums2)) % 2 == 0
 
         if not total_len_is_even == reduced_len_is_even:
