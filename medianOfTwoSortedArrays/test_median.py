@@ -59,27 +59,31 @@ def test_balance_large_test_big_median_lt():
 
 def test_balance_large_random():
     sol = median.Solution()
-    for i in range(50):
-        a_length = random.randint(3, 10)
-        b_length = random.randint(0, 10)
+    for i in range(1000):
+        a_length = random.randint(3, 1000)
+        b_length = random.randint(0, 1000)
         million = 1000000
 
-        a = random.sample(range(-10, 10), a_length)
+        a = random.sample(range(-million, million), a_length)
         a.sort()
-        b = random.sample(range(-10, 10), b_length)
+        b = random.sample(range(-million, million), b_length)
         b.sort()
 
         expected_median = statistics.median(a + b)
 
         actual_a, actual_b = sol.balance_large(a, b)
         remaining_median = statistics.median(actual_a + actual_b)
-        succeed = (expected_median == remaining_median) and len(actual_a) * 2 >= len(actual_b)
+        still_sorted = actual_a == sorted(actual_a) and actual_b == sorted(actual_b)
+        succeed = (expected_median == remaining_median) and len(actual_a) * 2 >= len(actual_b) and still_sorted
         if not succeed:
             print(a, b)
             print(actual_a, actual_b)
             print("Expected median = {}".format(expected_median))
             print("Remaining median = {}".format(remaining_median))
-        assert succeed
+        assert remaining_median == expected_median
+        assert len(actual_a) * 2 >= len(actual_b)
+        assert actual_a == sorted(actual_a)
+        assert actual_b == sorted(actual_b)
 
 
 def test_balance_large_from_random():
@@ -130,7 +134,7 @@ def test_prepare_lists():
 
 def test_prepare_lists_random():
     sol = median.Solution()
-    for i in range(50):
+    for i in range(1000):
         a_length = random.randint(3, 50)
         b_length = random.randint(3, 50)
         million = 1000000
@@ -139,17 +143,19 @@ def test_prepare_lists_random():
         a.sort()
         b = random.sample(range(-million, million), b_length)
         b.sort()
+        expected_median = statistics.median(a + b)
 
         actual_a, actual_b = sol.prepare_lists(a, b)
+        remaining_median = statistics.median(actual_a + actual_b)
         if len(actual_a) + len(actual_b) > 4:
             assert len(actual_a) % 2 != 0
             assert len(actual_b) % 2 != 0
             assert actual_a == sorted(actual_a)
             assert actual_b == sorted(actual_b)
             assert len(actual_a) == len(actual_b)
-        else:
-            assert actual_a == sorted(actual_a)
-            assert actual_b == sorted(actual_b)
+        assert actual_a == sorted(actual_a)
+        assert actual_b == sorted(actual_b)
+        assert remaining_median == expected_median
 
 
 def test_switch_number_small_lt_big():
@@ -196,14 +202,14 @@ def test_find_median_even():
 def test_remove_min():
     sol = median.Solution()
     (a, b) = [-1, 0], [-50, 1]
-    sol.remove_min(a, b)
+    sol.remove_min_of_both(a, b)
     assert b == [1]
     assert a == [-1, 0]
-    sol.remove_min(a, b)
+    sol.remove_min_of_both(a, b)
     assert b == [1]
     assert a == [0]
 
-    sol.remove_min(a, b)
+    sol.remove_min_of_both(a, b)
     assert b == [1]
     assert a == []
 
@@ -211,10 +217,10 @@ def test_remove_min():
 def test_remove_max():
     sol = median.Solution()
     (a, b) = [1, 100], [-68, 10]
-    sol.remove_max(a, b)
+    sol.remove_max_of_both(a, b)
     assert a == [1]
     assert b == [-68, 10]
-    sol.remove_max(a, b)
+    sol.remove_max_of_both(a, b)
     assert (a, b) == ([1], [-68])
 
 
@@ -337,31 +343,77 @@ def test_merge():
 
 def test_from_random():
     sol = median.Solution()
-    a = [-10, -6, -4, -3, 0, 2, 4, 7, 8, 9]
-    b = [-7, -5, -4, -2, -1, 1, 3, 6, 7, 8]
+    a = [-7, -4, -3, -1, 2, 3, 5, 6, 7, 8]
+    b = [-8, -7, -2, 0]
+    # [-8, -7, -7, -4, -3, -2, -1, 0, 2, 3, 5, 6, 7, 8]
+    # [-4, -3, -2, -1, 0, 2, 3, 5] 1
+    # [-2, -1, 0, 2, 3] 2 nums1 = [-2, 0, 3] nums2 = [-1, 2] xxxxxx
+    # sent to merge: n1: [0, 3] n2: [-1, 2]
     expected_median = statistics.median(a + b)
     assert sol.findMedianSortedArrays(a, b) == expected_median
 
 
-def test_randoms():
+def test_same_size():
     sol = median.Solution()
-    million = 1000000
-    list_of_randoms1 = random.sample(range(-10, 10), 10)
-    list_of_randoms2 = random.sample(range(-10, 10), 10)
-    median_of_both = statistics.median(list_of_randoms1 + list_of_randoms2)
+    a = [-2, 0, 3, 5, 6, 7]
+    b = [-8, -7, -7, -4, -3, -1]
+    expected_median = statistics.median(a + b)
+    assert sol.findMedianSortedArrays(a, b) == expected_median
 
-    list_of_randoms1.sort()
-    list_of_randoms2.sort()
 
-    sol_median = sol.findMedianSortedArrays(list_of_randoms1, list_of_randoms2)
+def test_lists_size_seven():
+    sol = median.Solution()
+    a = [-2, 0, 3, 5, 6, 7, 8]
+    b = [-8, -7, -7, -4, -3, -1, 2]
+    # merged, sorted: [-8, -7, -7, -4, -3, -2, -1, 0, 2, 3, 5, 6, 7, 8]
+    expected_median = statistics.median(a + b)  # = -0.5
+    assert sol.findMedianSortedArrays(a, b) == expected_median
 
-    passed = sol_median == median_of_both
 
-    if not passed:
-        print("\n")
-        print(list_of_randoms1)
-        print(list_of_randoms2)
-        print("Real median: {}".format(median_of_both))
-        print("Found median: {}".format(sol_median))
+def test_randoms_small():
+    SAMPLE_SIZE = 1000
+    for i in range(SAMPLE_SIZE):
+        sol = median.Solution()
+        r1_size = random.randint(0, 10)
+        list_of_randoms1 = random.sample(range(-10, 10), r1_size)
 
-    assert passed
+        r2_size = random.randint(1, 10)
+        list_of_randoms2 = random.sample(range(-10, 10), r2_size)
+        median_of_both = statistics.median(list_of_randoms1 + list_of_randoms2)
+
+        list_of_randoms1.sort()
+        list_of_randoms2.sort()
+
+        sol_median = sol.findMedianSortedArrays(list_of_randoms1, list_of_randoms2)
+
+        passed = sol_median == median_of_both
+
+        if not passed:
+            print("\n")
+            print(list_of_randoms1)
+            print(list_of_randoms2)
+            print("Real median: {}".format(median_of_both))
+            print("Found median: {}".format(sol_median))
+
+        assert passed
+
+
+def test_randoms_large():
+    SAMPLE_SIZE = 1000
+    for i in range(SAMPLE_SIZE):
+        sol = median.Solution()
+        million = 1000000
+
+        r1_size = random.randint(0, 1000)
+        list_of_randoms1 = random.sample(range(-million, million), r1_size)
+
+        r2_size = random.randint(1, 1000)
+        list_of_randoms2 = random.sample(range(-million, million), r2_size)
+        expected_median = statistics.median(list_of_randoms1 + list_of_randoms2)
+
+        list_of_randoms1.sort()
+        list_of_randoms2.sort()
+
+        sol_median = sol.findMedianSortedArrays(list_of_randoms1, list_of_randoms2)
+
+        assert expected_median == sol_median
