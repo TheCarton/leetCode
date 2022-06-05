@@ -104,7 +104,7 @@ def test_balance_lists():
     sol = median.Solution()
     a = [-1, 10, 50]
     b = [-200, -50, 0, 1, 7, 65, 100, 120, 121, 122, 156]
-    actual_a, actual_b = sol.balance_lists(a, b)
+    actual_a, actual_b = sol.match_lists(a, b)
     assert actual_a == sorted(actual_a)
     assert actual_b == sorted(actual_b)
     assert len(actual_a) == len(actual_b)
@@ -114,7 +114,7 @@ def test_balance_lists_one_empty():
     sol = median.Solution()
     a = [-50, 72936, 72936, 107639, 107639, 132960]
     b = []
-    actual_a, actual_b = sol.balance_lists(a, b)
+    actual_a, actual_b = sol.match_lists(a, b)
     assert actual_a == sorted(actual_a)
     assert actual_b == sorted(actual_b)
     assert len(actual_a) == len(actual_b)
@@ -257,6 +257,15 @@ def test_two_odd_arrays():
     assert sol_median == expected_median
 
 
+def test_two_balance_two_size_four():
+    sol = median.Solution()
+    a = [-1, 9]
+    b = [1, 7, 100]
+    a_bal, b_bal, rem = sol.balance_lists(a, b, [])
+    assert len(a_bal) == len(b_bal)
+    assert rem[0] == -1
+
+
 def test_two_arrays_size_four():
     sol = median.Solution()
     a = [-1, 9, 10, 20]
@@ -280,6 +289,7 @@ def test_one_singleton_one_large():
     sol = median.Solution()
     a = [-1]
     b = [-50, 0, 1, 7, 65, 100]
+    # [-50, -1, 0, 1, 7, 65, 100]
     expected_median = statistics.median(a + b)
     sol_median = sol.findMedianSortedArrays(a, b)
     assert sol_median == expected_median
@@ -291,9 +301,9 @@ def test_very_unbalanced():
     b = [-200, -50, 0, 1, 7, 65, 100, 120, 121, 122, 156, 569, 603]
     # Merged is [-200, -50, -1, 0, 1, 7, 10, 50, 65, 100, 120, 121, 122, 156, 569, 603]
     expected_median = statistics.median(a + b)
+    # 57.5
     sol_median = sol.findMedianSortedArrays(a, b)
     assert sol_median == expected_median
-
 
 def test_two_arrays_same():
     sol = median.Solution()
@@ -358,6 +368,42 @@ def test_same_size():
     a = [-2, 0, 3, 5, 6, 7]
     b = [-8, -7, -7, -4, -3, -1]
     expected_median = statistics.median(a + b)
+    assert sol.findMedianSortedArrays(a, b) == expected_median
+
+
+def test_balance_fifteen():
+    sol = median.Solution()
+    a = [-20, 60, 61]
+    b = [-1, 5, 36, 41, 42, 43, 100, 101, 120, 121, 130, 135]
+    expected_median = statistics.median(a + b)
+    a_bal, b_bal = sol.match_lists(a, b)
+    remaining_median = statistics.median(a_bal + b_bal)
+    assert len(b_bal) - len(a_bal) == 1
+    assert expected_median == remaining_median
+    assert len(a + b) == len(a_bal + b_bal)
+    assert sorted(a_bal) == a_bal
+    assert sorted(b_bal) == b_bal
+
+
+def test_balancer():
+    sol = median.Solution()
+    a = [-2, 0, 3, 5, 5, 6, 7]
+    b = [-8, -7, -7, -4, -3, -1, 1, 20]
+    a_bal, b_bal, rem = sol.balance_lists(a, b, [])
+    assert len(a_bal) == len(b_bal)
+    assert a_bal == sorted(a_bal)
+    assert b_bal == sorted(b_bal)
+    assert rem[0] == -8
+
+
+def test_size_fifteen():
+    sol = median.Solution()
+    a = [-2, 0, 3, 5, 5, 6, 7]
+    b = [-8, -7, -7, -4, -3, -1, 1, 20]
+    # merged = [-8, -7, -7, -4, -3, -2, -1, 0, 1, 3, 5, 5, 6, 7, 20]
+    # after while: nums1 = [-2, 0, 3], nums2 = [1, 20]
+    expected_median = statistics.median(a + b)
+    # median = 0
     assert sol.findMedianSortedArrays(a, b) == expected_median
 
 
