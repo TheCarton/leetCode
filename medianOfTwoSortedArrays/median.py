@@ -185,6 +185,24 @@ class Solution(object):
         else:
             return middle_index, float(nums[middle_index])
 
+    def reduce(self, small, large, left_rems, right_rems):
+        small_i, _ = self.get_middle_value(small)
+        large_i, _ = self.get_middle_value(large)
+
+        new_large = large[:large_i + 1]
+        new_right_rems = right_rems - (len(large) - len(new_large))
+        if new_right_rems >= 0:
+            large = new_large
+            right_rems = new_right_rems
+
+        new_small = small[small_i:]
+        new_left_rems = left_rems - (len(small) - len(new_small))
+        if new_left_rems >= 0:
+            small = new_small
+            left_rems = new_left_rems
+
+        return small, large, left_rems, right_rems
+
     def findMedianSortedArrays(self, nums1, nums2):
         """
         :type nums1: List[int]
@@ -204,30 +222,35 @@ class Solution(object):
         if self.find_median(nums1) == self.find_median(nums2):
             return self.find_median(nums1)
 
+        nums1, nums2 = self.match_lists(nums1, nums2)
+
         total_len_is_even = (len(nums1) + len(nums2)) % 2 == 0
 
-        nums1, nums2 = self.match_lists(nums1, nums2)
-        rem = []
-        nums1, nums2, rem = self.balance_lists(nums1, nums2, rem)
+        if total_len_is_even:
+            left_rems = right_rems = (len(nums1) + len(nums2) - 2) / 2
+        else:
+            left_rems = right_rems = (len(nums1) + len(nums2) - 3) / 2
 
-        while len(nums1) > 2 or len(nums2) > 2:
+        while left_rems > 1 and right_rems > 1:
 
-            middle_index_nums1, nums1_middle = self.get_middle_value(nums1)
-            middle_index_nums2, nums2_middle = self.get_middle_value(nums2)
+            _, nums1_middle = self.get_middle_value(nums1)
+            _, nums2_middle = self.get_middle_value(nums2)
 
             if nums1_middle < nums2_middle:
-                nums1 = nums1[middle_index_nums1:]
-                nums2 = nums2[:middle_index_nums2 + 1]
+                small = nums1
+                large = nums2
             else:
-                nums1 = nums1[:middle_index_nums1 + 1]
-                nums2 = nums2[middle_index_nums2:]
-            nums1, nums2, rem = self.balance_lists(nums1, nums2, rem)
+                small = nums2
+                large = nums1
+
+            nums1, nums2, left_rems, right_rems = self.reduce(small, large, left_rems, right_rems)
+
+        while left_rems > 0:
+            nums1, nums2 = self.remove_min_of_both(nums1, nums2)
+            left_rems -= 1
+        while right_rems > 0:
+            nums1, nums2 = self.remove_max_of_both(nums1, nums2)
+            right_rems -= 1
 
         merged = self.merge(nums1, nums2)
-        merged = self.merge(merged, rem)
-        merged_is_even = (len(merged) % 2) == 0
-
-        if total_len_is_even != merged_is_even:
-            merged = merged[1:]
-
         return self.find_median(merged)

@@ -276,6 +276,16 @@ def test_two_arrays_size_four():
     assert sol_median == expected_median
 
 
+def test_two_arrays_size_four_ordered():
+    sol = median.Solution()
+    a = [0, 1, 2, 3]
+    b = [4, 5, 6, 7]
+    expected_median = statistics.median(a + b)  # 8.0
+    sol_median = sol.findMedianSortedArrays(a, b)
+
+    assert sol_median == expected_median
+
+
 def test_two_arrays_mixed_larger():
     sol = median.Solution()
     a = [-1, 6, 7, 21, 500]
@@ -304,6 +314,7 @@ def test_very_unbalanced():
     # 57.5
     sol_median = sol.findMedianSortedArrays(a, b)
     assert sol_median == expected_median
+
 
 def test_two_arrays_same():
     sol = median.Solution()
@@ -412,7 +423,18 @@ def test_lists_size_seven():
     a = [-2, 0, 3, 5, 6, 7, 8]
     b = [-8, -7, -7, -4, -3, -1, 2]
     # merged, sorted: [-8, -7, -7, -4, -3, -2, -1, 0, 2, 3, 5, 6, 7, 8]
+    #                                           _____
     expected_median = statistics.median(a + b)  # = -0.5
+    assert sol.findMedianSortedArrays(a, b) == expected_median
+
+
+def test_total_size_twelve():
+    sol = median.Solution()
+    a = [-9, -6, -1, 4, 6, 8]
+    b = [-9, -7, -6, -3, -2, 4]
+    # m = [-9, -9, -7, -6, -6, -3, -2, -1, 4, 4, 6, 8]
+    #                          _______
+    expected_median = statistics.median(a + b)  # = -2.5
     assert sol.findMedianSortedArrays(a, b) == expected_median
 
 
