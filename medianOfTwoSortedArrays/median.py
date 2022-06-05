@@ -175,18 +175,9 @@ class Solution(object):
         :type nums2: List[int]
         :rtype: float
         """
-        at_least_one_is_empty = not (nums1 and nums2)
-        if at_least_one_is_empty or (len(nums1) == 1 and len(nums2) == 1):
-            return self.find_median(nums1 + nums2)
-
-        # If we get here, the lists are 'mixed' and non-empty,
-        # so we can't just union them.
-
-        if len(nums1) + len(nums2) < 5:
-            return self.find_median(self.merge(nums1, nums2))
-
-        if self.find_median(nums1) == self.find_median(nums2):
-            return self.find_median(nums1)
+        if len(nums1) < 2 and len(nums2) < 2:
+            merged = self.merge(nums1, nums2)
+            return self.find_median(merged)
 
         nums1, nums2 = self.balance_large(nums1, nums2)
         nums1, nums2 = self.balance_lists(nums1, nums2)
@@ -229,4 +220,8 @@ class Solution(object):
             right_rems -= 1
 
         merged = self.merge(nums1, nums2)
-        return self.find_median(merged)
+        if total_len_is_even:
+            median = float((merged[0] + merged[1]) / 2)
+        else:
+            median = float(merged[1])
+        return median
