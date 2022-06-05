@@ -137,45 +137,11 @@ class Solution(object):
 
         return self.order_lists(small_list, big_list)
 
-    def match_lists(self, nums1, nums2):
-        (small_list, big_list) = self.balance_large(nums1, nums2)
+    def balance_lists(self, nums1, nums2):
+        small_list, big_list = self.order_lists(nums1, nums2)
         while len(big_list) - len(small_list) > 1:
             small_list, big_list = self.switch_number_to_smaller_list(small_list, big_list)
         return self.order_lists(small_list, big_list)
-
-    def prepare_lists(self, nums1, nums2):
-        split_lists_are_even = ((len(nums1) + len(nums2)) / 2) % 2 == 0
-        split_lists_unequal = (len(nums1) + len(nums2)) / 2 != (len(nums1) + len(nums2)) // 2
-        merged_list_gt_four = (len(nums1) + len(nums2)) > 4
-        while split_lists_are_even or split_lists_unequal and merged_list_gt_four:
-            nums1, nums2 = self.remove_max_and_min(nums1, nums2)
-            split_lists_are_even = ((len(nums1) + len(nums2)) / 2) % 2 == 0
-            split_lists_unequal = (len(nums1) + len(nums2)) / 2 != (len(nums1) + len(nums2)) // 2
-            merged_list_gt_four = (len(nums1) + len(nums2)) > 4
-
-        (small_list, big_list) = self.order_lists(nums1, nums2)
-
-        if not merged_list_gt_four:
-            return small_list, big_list
-        else:
-            return self.match_lists(small_list, big_list)
-
-    def balance_lists(self, nums1, nums2, rem):
-        nums_are_odd = (len(nums1) + len(nums2)) % 2 != 0
-        if nums_are_odd and len(rem) > 0:
-            nums1.insert(0, rem.pop(0))
-        elif nums_are_odd:
-            if nums2[0] <= nums1[0]:
-                rem.append(nums2.pop(0))
-            else:
-                rem.append(nums1.pop(0))
-        small, big = self.order_lists(nums1, nums2)
-        while len(small) != len(big):
-            if len(rem) > 0 and not nums_are_odd:
-                small.insert(0, rem.pop(0))
-            else:
-                small, big = self.switch_number_to_smaller_list(small, big)
-        return small, big, rem
 
     def get_middle_value(self, nums):
         middle_index = len(nums) // 2
@@ -189,7 +155,7 @@ class Solution(object):
         small_i, _ = self.get_middle_value(small)
         large_i, _ = self.get_middle_value(large)
 
-        new_large = large[:large_i + 1]
+        new_large = large[:large_i + 2]
         new_right_rems = right_rems - (len(large) - len(new_large))
         if new_right_rems >= 0:
             large = new_large
@@ -222,7 +188,8 @@ class Solution(object):
         if self.find_median(nums1) == self.find_median(nums2):
             return self.find_median(nums1)
 
-        nums1, nums2 = self.match_lists(nums1, nums2)
+        nums1, nums2 = self.balance_large(nums1, nums2)
+        nums1, nums2 = self.balance_lists(nums1, nums2)
 
         total_len_is_even = (len(nums1) + len(nums2)) % 2 == 0
 
@@ -245,11 +212,20 @@ class Solution(object):
 
             nums1, nums2, left_rems, right_rems = self.reduce(small, large, left_rems, right_rems)
 
+            while left_rems > right_rems:
+                self.remove_min_of_both(nums1, nums2)
+                left_rems -= 1
+            while right_rems > left_rems:
+                self.remove_max_of_both(nums1, nums2)
+                right_rems -= 1
+
+            nums1, nums2 = self.balance_lists(nums1, nums2)
+
         while left_rems > 0:
-            nums1, nums2 = self.remove_min_of_both(nums1, nums2)
+            self.remove_min_of_both(nums1, nums2)
             left_rems -= 1
         while right_rems > 0:
-            nums1, nums2 = self.remove_max_of_both(nums1, nums2)
+            self.remove_max_of_both(nums1, nums2)
             right_rems -= 1
 
         merged = self.merge(nums1, nums2)
