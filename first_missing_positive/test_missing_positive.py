@@ -73,6 +73,24 @@ def test_example_three():
     assert sol.firstMissingPositive(n) == 1
 
 
+def test_singleton_not_one():
+    sol = first_missing_positive.Solution()
+    n = [0]
+    assert sol.firstMissingPositive(n) == 1
+
+
+def test_singleton_one():
+    sol = first_missing_positive.Solution()
+    n = [1]
+    assert sol.firstMissingPositive(n) == 2
+
+
+def test_all_negative():
+    sol = first_missing_positive.Solution()
+    n = [-1, -2]
+    assert sol.firstMissingPositive(n) == 1
+
+
 def test_one_at_the_end():
     sol = first_missing_positive.Solution()
     n = [2, 8, 9, 11, 1]
@@ -107,6 +125,12 @@ def test_repeat_three_big_number_in_front():
     sol = first_missing_positive.Solution()
     n = [20, 3, 4, 3, 1]
     assert sol.firstMissingPositive(n) == 2
+
+
+def test_from_leet():
+    sol = first_missing_positive.Solution()
+    n = [1, 2, 6, 3, 5, 4]
+    assert sol.firstMissingPositive(n) == 7
 
 
 def test_random_spread():

@@ -26,9 +26,45 @@ def test_order_lists():
     assert sol.order_lists([1, 2, 3], []) == ([], [1, 2, 3])
 
 
+def test_insert_list_a_inside_b():
+    sol = median.Solution()
+    a = [4, 5, 6, 7]
+    b = [1, 20, 30]
+    expected = sorted(a + b)
+    inserted = sol.insert_list(a, b)
+    assert inserted == expected
+
+
+def test_insert_list_a_inside_b_two():
+    sol = median.Solution()
+    a = [1, 4, 9, 11]
+    b = [1, 2, 3]
+    expected = sorted(a + b)
+    inserted = sol.insert_list(a, b)
+    assert inserted == expected
+
+
+def test_insert_list_a_before_b():
+    sol = median.Solution()
+    a = [-31, 0]
+    b = [1, 20, 30]
+    expected = sorted(a + b)
+    inserted = sol.insert_list(a, b)
+    assert inserted == expected
+
+
+def test_insert_list_a_after_b():
+    sol = median.Solution()
+    a = [31, 33]
+    b = [1, 20, 30]
+    expected = sorted(a + b)
+    inserted = sol.insert_list(a, b)
+    assert inserted == expected
+
+
 def test_order_lists_random():
     sol = median.Solution()
-    for i in range(1000):
+    for i in range(10):
         a_length = random.randint(0, 50)
         b_length = random.randint(0, 50)
         million = 1000000
@@ -44,23 +80,35 @@ def test_order_lists_random():
 def test_balance_large_test():
     sol = median.Solution()
     a = [1, 2, 3]
-    b = [1, 4, 9, 11, 25, 63, 78, 100, 123, 196, 155]
+    b = [1, 4, 9, 11, 25, 63, 78, 100, 123, 155, 196]
+    expected_median = statistics.median(a + b)
     actual_a, actual_b = sol.balance_large(a, b)
-    assert actual_a, actual_b == ([1, 2, 3, 63, 78, 100, 123, 196, 155], [1, 4, 9, 11, 25])
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert len(actual_a) + len(actual_b) == len(a) + len(b)
+    assert len(actual_b) - len(actual_a) <= 1
+    assert actual_a == sorted(actual_a)
+    assert actual_b == sorted(actual_b)
+    assert remaining_median == expected_median
 
 
 def test_balance_large_test_big_median_lt():
     sol = median.Solution()
     a = [1, 256, 300]
-    b = [1, 4, 9, 11, 25, 63, 78, 100, 123, 196, 155]
+    b = [1, 4, 9, 11, 25, 63, 78, 100, 123, 155, 196]
+    expected_median = statistics.median(a + b)
     actual_a, actual_b = sol.balance_large(a, b)
-    assert actual_a, actual_b == ([1, 4, 9, 11, 25, 256, 300], [78, 100, 123, 196, 155])
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert len(actual_a) + len(actual_b) == len(a) + len(b)
+    assert len(actual_b) - len(actual_a) <= 1
+    assert actual_a == sorted(actual_a)
+    assert actual_b == sorted(actual_b)
+    assert remaining_median == expected_median
 
 
 def test_balance_large_random():
     sol = median.Solution()
     for i in range(1000):
-        a_length = random.randint(3, 1000)
+        a_length = random.randint(4, 1000)
         b_length = random.randint(0, 1000)
         million = 1000000
 
@@ -70,44 +118,156 @@ def test_balance_large_random():
         b.sort()
 
         expected_median = statistics.median(a + b)
-
         actual_a, actual_b = sol.balance_large(a, b)
         remaining_median = statistics.median(actual_a + actual_b)
         still_sorted = actual_a == sorted(actual_a) and actual_b == sorted(actual_b)
-        succeed = (expected_median == remaining_median) and len(actual_a) * 2 >= len(actual_b) and still_sorted
+        balanced = len(actual_b) - len(actual_a) <= 1
+        correct_size = len(actual_a) + len(actual_b) == len(a) + len(b)
+        succeed = (expected_median == remaining_median) and balanced and still_sorted and correct_size
         if not succeed:
             print(a, b)
             print(actual_a, actual_b)
             print("Expected median = {}".format(expected_median))
             print("Remaining median = {}".format(remaining_median))
+            print(f"Correct total size = {len(a) + len(b)}")
+            print(f"Actual total size = {len(actual_a) + len(actual_b)}")
+            print(f"Size difference = {len(actual_b) - len(actual_a)}")
         assert remaining_median == expected_median
-        assert len(actual_a) * 2 >= len(actual_b)
+        assert len(actual_b) - len(actual_a) <= 1
         assert actual_a == sorted(actual_a)
         assert actual_b == sorted(actual_b)
 
 
-def test_balance_large_from_random():
+def test_balance_large_random_smaller_ints():
     sol = median.Solution()
-    a = [-10, -4, -2, 3, 7]
-    b = [-8, -2]
-    expected_median = statistics.median(a + b)
+    for i in range(1000):
+        a_length = random.randint(3, 10)
+        b_length = random.randint(0, 10)
+        million = 1000000
 
+        a = random.sample(range(-10, 10), a_length)
+        a.sort()
+        b = random.sample(range(-10, 10), b_length)
+        b.sort()
+
+        expected_median = statistics.median(a + b)
+        actual_a, actual_b = sol.balance_large(a, b)
+        remaining_median = statistics.median(actual_a + actual_b)
+        still_sorted = actual_a == sorted(actual_a) and actual_b == sorted(actual_b)
+        balanced = len(actual_b) - len(actual_a) <= 1
+        correct_size = len(actual_a) + len(actual_b) == len(a) + len(b)
+        succeed = (expected_median == remaining_median) and balanced and still_sorted and correct_size
+        if not succeed:
+            print(a, b)
+            print(actual_a, actual_b)
+            print("Expected median = {}".format(expected_median))
+            print("Remaining median = {}".format(remaining_median))
+            print(f"Correct total size = {len(a) + len(b)}")
+            print(f"Actual total size = {len(actual_a) + len(actual_b)}")
+            print(f"Size difference = {len(actual_b) - len(actual_a)}")
+        assert remaining_median == expected_median
+        assert len(actual_b) - len(actual_a) <= 1
+        assert actual_a == sorted(actual_a)
+        assert actual_b == sorted(actual_b)
+
+
+def test_balance_large_singleton():
+    sol = median.Solution()
+    a = [1]
+    b = [-9, -5, -4, 2, 4, 5, 6, 7, 9]
+    expected_median = statistics.median(a + b)
     actual_a, actual_b = sol.balance_large(a, b)
     remaining_median = statistics.median(actual_a + actual_b)
     assert remaining_median == expected_median
+    assert len(actual_b) - len(actual_a) <= 1
     assert actual_a == sorted(actual_a)
     assert actual_b == sorted(actual_b)
-    assert len(actual_a) * 3 >= len(actual_b)
+
+
+def test_balance_large_from_random():
+    sol = median.Solution()
+    a = [-10, -4, -2, 3, 7, 9]
+    b = [-8, -2]
+
+    expected_median = statistics.median(a + b)
+    actual_a, actual_b = sol.balance_large(a, b)
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert remaining_median == expected_median
+    assert len(actual_b) - len(actual_a) <= 1
+    assert actual_a == sorted(actual_a)
+    assert actual_b == sorted(actual_b)
+
+
+def test_balance_large_small_clamps_large_one():
+    sol = median.Solution()
+    a = [-1000, 10, 5000]
+    b = [-200, -50, 0, 1, 7, 65, 100, 120, 121, 122, 156]
+    expected_median = statistics.median(a + b)
+    actual_a, actual_b = sol.balance_large(a, b)
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert remaining_median == expected_median
+    assert len(actual_b) - len(actual_a) <= 1
+    assert actual_a == sorted(actual_a)
+    assert actual_b == sorted(actual_b)
+
+
+def test_balance_large_small_clamps_large_two():
+    sol = median.Solution()
+    a = [-1000, 400, 5000]
+    b = [-200, -50, 0, 1, 7, 65, 100, 120, 121, 122, 156]
+    expected_median = statistics.median(a + b)
+    actual_a, actual_b = sol.balance_large(a, b)
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert remaining_median == expected_median
+    assert len(actual_b) - len(actual_a) <= 1
+    assert actual_a == sorted(actual_a)
+    assert actual_b == sorted(actual_b)
 
 
 def test_balance_lists():
     sol = median.Solution()
     a = [-1, 10, 50]
     b = [-200, -50, 0, 1, 7, 65, 100, 120, 121, 122, 156]
+    expected_median = statistics.median(a + b)
     actual_a, actual_b = sol.balance_lists(a, b)
+    remaining_median = statistics.median(actual_a + actual_b)
+    assert remaining_median == expected_median
+    assert len(actual_b) - len(actual_a) <= 1
     assert actual_a == sorted(actual_a)
     assert actual_b == sorted(actual_b)
-    assert len(actual_a) == len(actual_b)
+
+
+def test_balance_random_smaller_ints():
+    sol = median.Solution()
+    for i in range(1000):
+        a_length = random.randint(0, 10)
+        b_length = random.randint(1, 10)
+        million = 1000000
+
+        a = random.sample(range(-10, 10), a_length)
+        a.sort()
+        b = random.sample(range(-10, 10), b_length)
+        b.sort()
+
+        expected_median = statistics.median(a + b)
+        actual_a, actual_b = sol.balance_large(a, b)
+        remaining_median = statistics.median(actual_a + actual_b)
+        still_sorted = actual_a == sorted(actual_a) and actual_b == sorted(actual_b)
+        balanced = len(actual_b) - len(actual_a) <= 1
+        correct_size = len(actual_a) + len(actual_b) == len(a) + len(b)
+        succeed = (expected_median == remaining_median) and balanced and still_sorted and correct_size
+        if not succeed:
+            print(a, b)
+            print(actual_a, actual_b)
+            print("Expected median = {}".format(expected_median))
+            print("Remaining median = {}".format(remaining_median))
+            print(f"Correct total size = {len(a) + len(b)}")
+            print(f"Actual total size = {len(actual_a) + len(actual_b)}")
+            print(f"Size difference = {len(actual_b) - len(actual_a)}")
+        assert remaining_median == expected_median
+        assert len(actual_b) - len(actual_a) <= 1
+        assert actual_a == sorted(actual_a)
+        assert actual_b == sorted(actual_b)
 
 
 def test_prepare_lists():
@@ -123,7 +283,7 @@ def test_prepare_lists():
 
 def test_prepare_lists_random():
     sol = median.Solution()
-    for i in range(100):
+    for i in range(10):
         a_length = random.randint(0, 1000)
         b_length = random.randint(1, 1000)
         million = 1000000
@@ -191,6 +351,13 @@ def test_remove_max():
     assert b == [-68, 10]
     sol.remove_max_of_both(a, b)
     assert (a, b) == ([1], [-68])
+
+
+def test_find_median_size_two():
+    sol = median.Solution()
+    a = [1, 2]
+    expected_median = statistics.median(a)
+    assert sol.find_median(a) == expected_median
 
 
 ####################################################### Integration Tests #######################################################
@@ -400,7 +567,7 @@ def test_unbalanced_size_twelve():
 
 
 def test_randoms_small():
-    SAMPLE_SIZE = 1000
+    SAMPLE_SIZE = 100
     for i in range(SAMPLE_SIZE):
         sol = median.Solution()
         r1_size = random.randint(0, 10)
@@ -428,7 +595,7 @@ def test_randoms_small():
 
 
 def test_randoms_large():
-    SAMPLE_SIZE = 1000
+    SAMPLE_SIZE = 100
     for i in range(SAMPLE_SIZE):
         sol = median.Solution()
         million = 1000000
